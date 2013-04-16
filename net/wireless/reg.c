@@ -860,8 +860,9 @@ static void handle_channel(struct wiphy *wiphy,
 		 * to send only a subset of the regulatory rules allowed,
 		 * so an AP in the US that only supports 2.4 GHz may only send
 		 * a country IE with information for the 2.4 GHz band
-		 * while 5 GHz is still supported.
+		 * while 5 GHz is still supposupported.
 		 */
+
 		if (initiator == NL80211_REGDOM_SET_BY_COUNTRY_IE &&
 		    r == -ERANGE)
 			return;
