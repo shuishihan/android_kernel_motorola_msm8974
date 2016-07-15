@@ -295,7 +295,7 @@ static int migrate_page_move_mapping(struct address_space *mapping,
 {
 	struct zone *oldzone, *newzone;
 	int dirty;
-	int expected_count;
+	int expected_count = 0;
 	void **pslot;
 
 	if (!mapping) {
