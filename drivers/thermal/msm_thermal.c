@@ -2068,6 +2068,9 @@ done_cc_nodes:
 	return ret;
 }
 
+static int virtual_sensor0 = -EINVAL;
+module_param(virtual_sensor0, int, 0644);
+
 int msm_thermal_pre_init(void)
 {
 	int ret = 0;
@@ -2095,7 +2098,7 @@ pre_init_exit:
 	return ret;
 }
 
-int msm_thermal_init(struct msm_thermal_data *pdata)
+int __devinit msm_thermal_init(struct msm_thermal_data *pdata)
 {
 	int ret = 0;
 	uint32_t cpu;
