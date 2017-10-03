@@ -142,6 +142,7 @@ static const char * const task_state_array[] = {
 	"x (dead)",		/*  64 */
 	"K (wakekill)",		/* 128 */
 	"W (waking)",		/* 256 */
+	"P (parked)",		/* 512 */
 };
 
 static inline const char *get_task_state(struct task_struct *tsk)
@@ -319,6 +320,16 @@ static inline void task_cap(struct seq_file *m, struct task_struct *p)
 	render_cap_t(m, "CapEff:\t", &cap_effective);
 	render_cap_t(m, "CapBnd:\t", &cap_bset);
 	render_cap_t(m, "CapAmb:\t", &cap_ambient);
+<<<<<<< HEAD
+=======
+}
+
+static inline void task_seccomp(struct seq_file *m, struct task_struct *p)
+{
+#ifdef CONFIG_SECCOMP
+	seq_printf(m, "Seccomp:\t%d\n", p->seccomp.mode);
+#endif
+>>>>>>> origin/lineage-15.0
 }
 
 static inline void task_context_switch_counts(struct seq_file *m,
@@ -354,6 +365,7 @@ int proc_pid_status(struct seq_file *m, struct pid_namespace *ns,
 	}
 	task_sig(m, task);
 	task_cap(m, task);
+	task_seccomp(m, task);
 	task_cpus_allowed(m, task);
 	cpuset_task_status_allowed(m, task);
 	task_context_switch_counts(m, task);
