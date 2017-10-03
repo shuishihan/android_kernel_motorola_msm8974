@@ -208,25 +208,7 @@ static struct page *get_arg_page(struct linux_binprm *bprm, unsigned long pos,
 
 	if (write) {
 		unsigned long size = bprm->vma->vm_end - bprm->vma->vm_start;
-		unsigned long ptr_size;
 		struct rlimit *rlim;
-
-		/*
-		 * Since the stack will hold pointers to the strings, we
-		 * must account for them as well.
-		 *
-		 * The size calculation is the entire vma while each arg page is
-		 * built, so each time we get here it's calculating how far it
-		 * is currently (rather than each call being just the newly
-		 * added size from the arg page).  As a result, we need to
-		 * always add the entire size of the pointers, so that on the
-		 * last call to get_arg_page() we'll actually have the entire
-		 * correct size.
-		 */
-		ptr_size = (bprm->argc + bprm->envc) * sizeof(void *);
-		if (ptr_size > ULONG_MAX - size)
-			goto fail;
-		size += ptr_size;
 
 		acct_arg_size(bprm, size / PAGE_SIZE);
 
@@ -245,15 +227,13 @@ static struct page *get_arg_page(struct linux_binprm *bprm, unsigned long pos,
 		 *    to work from.
 		 */
 		rlim = current->signal->rlim;
-		if (size > ACCESS_ONCE(rlim[RLIMIT_STACK].rlim_cur) / 4)
-			goto fail;
+		if (size > ACCESS_ONCE(rlim[RLIMIT_STACK].rlim_cur) / 4) {
+			put_page(page);
+			return NULL;
+		}
 	}
 
 	return page;
-
-fail:
-	put_page(page);
-	return NULL;
 }
 
 static void put_arg_page(struct page *page)
@@ -1274,45 +1254,6 @@ void install_exec_creds(struct linux_binprm *bprm)
 }
 EXPORT_SYMBOL(install_exec_creds);
 
-static void bprm_fill_uid(struct linux_binprm *bprm)
-{
-	struct inode *inode;
-	unsigned int mode;
-	uid_t uid;
-	gid_t gid;
-
-	/* clear any previous set[ug]id data from a previous binary */
-	bprm->cred->euid = current_euid();
-	bprm->cred->egid = current_egid();
-
-	if (bprm->file->f_path.mnt->mnt_flags & MNT_NOSUID)
-		return;
-
-	inode = bprm->file->f_path.dentry->d_inode;
-	mode = ACCESS_ONCE(inode->i_mode);
-	if (!(mode & (S_ISUID|S_ISGID)))
-		return;
-
-	/* Be careful if suid/sgid is set */
-	mutex_lock(&inode->i_mutex);
-
-	/* reload atomically mode/uid/gid now that lock held */
-	mode = inode->i_mode;
-	uid = inode->i_uid;
-	gid = inode->i_gid;
-	mutex_unlock(&inode->i_mutex);
-
-	if (mode & S_ISUID) {
-		bprm->per_clear |= PER_CLEAR_ON_SETID;
-		bprm->cred->euid = uid;
-	}
-
-	if ((mode & (S_ISGID | S_IXGRP)) == (S_ISGID | S_IXGRP)) {
-		bprm->per_clear |= PER_CLEAR_ON_SETID;
-		bprm->cred->egid = gid;
-	}
-}
-
 /*
  * determine how safe it is to execute the proposed program
  * - the caller must hold ->cred_guard_mutex to protect against
@@ -1361,10 +1302,6 @@ static int check_unsafe_exec(struct linux_binprm *bprm)
 	return res;
 }
 
-<<<<<<< HEAD
-/* 
- * Fill the binprm structure from the inode. 
-=======
 static void bprm_fill_uid(struct linux_binprm *bprm)
 {
 	struct inode *inode;
@@ -1406,7 +1343,6 @@ static void bprm_fill_uid(struct linux_binprm *bprm)
 
 /*
  * Fill the binprm structure from the inode.
->>>>>>> origin/lineage-15.0
  * Check permissions, then read the first 128 (BINPRM_BUF_SIZE) bytes
  *
  * This may be called multiple times for binary chains (scripts for example).

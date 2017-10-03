@@ -138,10 +138,7 @@ static bool timerfd_canceled(struct timerfd_ctx *ctx)
 
 static void timerfd_setup_cancel(struct timerfd_ctx *ctx, int flags)
 {
-<<<<<<< HEAD
 	spin_lock(&ctx->cancel_lock);
-=======
->>>>>>> origin/lineage-15.0
 	if ((ctx->clockid == CLOCK_REALTIME ||
 	     ctx->clockid == CLOCK_REALTIME_ALARM) &&
 	    (flags & TFD_TIMER_ABSTIME) && (flags & TFD_TIMER_CANCEL_ON_SET)) {

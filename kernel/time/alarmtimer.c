@@ -70,7 +70,6 @@ void power_on_alarm_init(void)
 	/* If we have no rtcdev, just return */
 	if (!rtc)
 		return;
-<<<<<<< HEAD
 
 	rtc_read_alarm(rtc, &rtc_alarm);
 	rt = rtc_alarm.time;
@@ -132,69 +131,6 @@ void set_power_on_alarm(long secs, bool enable)
 	mutex_unlock(&power_on_alarm_lock);
 	return;
 
-=======
-
-	rtc_read_alarm(rtc, &rtc_alarm);
-	rt = rtc_alarm.time;
-
-	rtc_tm_to_time(&rt, &alarm_time);
-
-	if (alarm_time)
-		power_on_alarm = alarm_time + ALARM_DELTA;
-	else
-		power_on_alarm = 0;
-}
-
-void set_power_on_alarm(long secs, bool enable)
-{
-	int rc;
-	struct timespec wall_time;
-	long rtc_secs, alarm_time, alarm_delta;
-	struct rtc_time rtc_time;
-	struct rtc_wkalrm alarm;
-
-	rc = mutex_lock_interruptible(&power_on_alarm_lock);
-	if (rc != 0)
-		return;
-
-	if (enable) {
-			power_on_alarm = secs;
-	} else {
-		if (power_on_alarm == secs)
-			power_on_alarm = 0;
-		else
-			goto exit;
-	}
-
-	if (!power_on_alarm)
-		goto disable_alarm;
-
-	rtc_read_time(rtcdev, &rtc_time);
-	getnstimeofday(&wall_time);
-	rtc_tm_to_time(&rtc_time, &rtc_secs);
-	alarm_delta = wall_time.tv_sec - rtc_secs;
-	alarm_time = power_on_alarm - alarm_delta;
-
-	/*
-	 *Substract ALARM_DELTA from actual alarm time
-	 *to power up the device before actual alarm
-	 *expiration
-	 */
-	if ((alarm_time - ALARM_DELTA) > rtc_secs)
-		alarm_time -= ALARM_DELTA;
-	else
-		goto disable_alarm;
-
-	rtc_time_to_tm(alarm_time, &alarm.time);
-	alarm.enabled = 1;
-	rc = rtc_set_alarm(rtcdev, &alarm);
-	if (rc)
-		goto disable_alarm;
-
-	mutex_unlock(&power_on_alarm_lock);
-	return;
-
->>>>>>> origin/lineage-15.0
 disable_alarm:
 	power_on_alarm = 0;
 	rtc_alarm_irq_enable(rtcdev, 0);
@@ -513,7 +449,6 @@ static int alarmtimer_suspend(struct device *dev)
 static int alarmtimer_resume(struct device *dev)
 {
 	struct rtc_device *rtc;
-<<<<<<< HEAD
 
 	rtc = alarmtimer_get_rtcdev();
 	/* If we have no rtcdev, just return */
@@ -521,15 +456,6 @@ static int alarmtimer_resume(struct device *dev)
 		return 0;
 	rtc_timer_cancel(rtc, &rtctimer);
 
-=======
-
-	rtc = alarmtimer_get_rtcdev();
-	/* If we have no rtcdev, just return */
-	if (!rtc)
-		return 0;
-	rtc_timer_cancel(rtc, &rtctimer);
-
->>>>>>> origin/lineage-15.0
 	set_power_on_alarm(power_on_alarm , 1);
 	return 0;
 }

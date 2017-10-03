@@ -320,8 +320,6 @@ static inline void task_cap(struct seq_file *m, struct task_struct *p)
 	render_cap_t(m, "CapEff:\t", &cap_effective);
 	render_cap_t(m, "CapBnd:\t", &cap_bset);
 	render_cap_t(m, "CapAmb:\t", &cap_ambient);
-<<<<<<< HEAD
-=======
 }
 
 static inline void task_seccomp(struct seq_file *m, struct task_struct *p)
@@ -329,7 +327,6 @@ static inline void task_seccomp(struct seq_file *m, struct task_struct *p)
 #ifdef CONFIG_SECCOMP
 	seq_printf(m, "Seccomp:\t%d\n", p->seccomp.mode);
 #endif
->>>>>>> origin/lineage-15.0
 }
 
 static inline void task_context_switch_counts(struct seq_file *m,
